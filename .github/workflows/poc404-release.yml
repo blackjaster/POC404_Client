@@ -1,0 +1,56 @@
+name: POC404 release
+# Builds the game for Windows, packages it as POC404-windows-x64.zip, signs it with the key in the
+# RELEASE_SIGNING_KEY secret and publishes it as a GitHub release, which is where the POC404
+# launcher downloads it from (docs/POC404-RELEASE.md). Run it by hand: Actions > POC404 release.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag, a v and a number (the launcher only lists tags like that)
+        default: v1.0.0
+        required: true
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      # The C runtime linked in, so the game runs without the Visual C++ redistributable.
+      RUSTFLAGS: -C target-feature=+crt-static
+      TAG: ${{ inputs.tag }}
+      ASSET: POC404-windows-x64
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: The tag and the exporters are in place
+        run: |
+          [[ "$TAG" =~ ^v[0-9] ]] || { echo "::error::the tag must start with v and a digit, e.g. v1.0.0"; exit 1; }
+          test -f exporters/manifest.json || { echo "::error::exporters/manifest.json is missing: follow step 2 of docs/POC404-RELEASE.md once, on your own computer"; exit 1; }
+          test -n "${{ secrets.RELEASE_SIGNING_KEY }}" || { echo "::error::the RELEASE_SIGNING_KEY secret is not set (docs/POC404-RELEASE.md, step 1)"; exit 1; }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: poc404-windows
+      - name: Build the client, horizon-ctl, horizon-prepare and horizon-server
+        env:
+          HORIZON_VERSION: ${{ inputs.tag }}
+        run: cargo build --release --locked -p horizon-client --bin horizon-client --bin horizon-ctl -p horizon-prepare --bin horizon-prepare -p horizon-server --bin horizon-server
+      - name: Package
+        run: |
+          cargo run --locked -p xtask -- package target/release/horizon-client.exe "dist/$ASSET"
+          cd dist && 7z a -tzip "$ASSET.zip" "$ASSET" > /dev/null && ls -l "$ASSET.zip"
+      - name: Sign
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: bash tools/ci/sign_release.sh "$TAG" "dist/$ASSET.zip"
+      - name: The launcher's own check accepts it
+        run: cargo run --locked -q -p horizon-release-sign -- verify --tag "$TAG" dist
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" "dist/$ASSET.zip" dist/SHA256SUMS dist/SHA256SUMS.sig \
+            --title "POC404 $TAG" --notes "POC404 $TAG" --target "$GITHUB_SHA"

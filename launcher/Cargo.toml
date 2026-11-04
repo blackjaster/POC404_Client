@@ -78,3 +78,7 @@ syn = "2"
 
 [profile.release]
 strip = true
+# Every crate compiled and inlined as one unit: no per-crate boundaries or debug symbols left for
+# a disassembler to orient itself by. Costs build time, not runtime.
+lto = true
+codegen-units = 1

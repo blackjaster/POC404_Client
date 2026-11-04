@@ -56,6 +56,7 @@ const S: &[[usize; 4]] = &[
 
 /// The banner rebuilt to read "RUST EDITION", or `None` when the texture is
 /// not vanilla's (a resource pack's own).
+#[allow(dead_code)]
 pub fn rust_edition(width: u32, height: u32, pixels: &[u8]) -> Option<Vec<u8>> {
     (fingerprint(width, height, pixels) == VANILLA).then(|| compose(pixels))
 }

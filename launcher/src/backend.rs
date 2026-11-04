@@ -9,7 +9,7 @@ use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 
-pub const REPO: &str = "horizon-rust/horizon";
+pub const REPO: &str = "blackjaster/POC404_Client";
 pub const README_URL: &str = "https://github.com/horizon-rust/horizon/blob/main/launcher/README.md";
 /// The players' page on connecting an AI agent (the website's docs/agents.md).
 pub const AGENT_DOCS_URL: &str = "https://playhorizon.dev/docs/agents";
@@ -47,11 +47,11 @@ pub struct Release {
 }
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-pub const ASSET: Option<&str> = Some("horizon-linux-x86_64.tar.gz");
+pub const ASSET: Option<&str> = Some("POC404-linux-x86_64.tar.gz");
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-pub const ASSET: Option<&str> = Some("horizon-macos-arm64.zip");
+pub const ASSET: Option<&str> = Some("POC404-macos-arm64.zip");
 #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-pub const ASSET: Option<&str> = Some("horizon-windows-x64.zip");
+pub const ASSET: Option<&str> = Some("POC404-windows-x64.zip");
 #[cfg(not(any(
     all(target_os = "linux", target_arch = "x86_64"),
     all(target_os = "macos", target_arch = "aarch64"),
@@ -60,11 +60,11 @@ pub const ASSET: Option<&str> = Some("horizon-windows-x64.zip");
 pub const ASSET: Option<&str> = None;
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-pub const LAUNCHER_ASSET: Option<&str> = Some("horizon-launcher-linux-x86_64.tar.gz");
+pub const LAUNCHER_ASSET: Option<&str> = Some("POC404-launcher-linux-x86_64.tar.gz");
 #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-pub const LAUNCHER_ASSET: Option<&str> = Some("horizon-launcher-macos-arm64.zip");
+pub const LAUNCHER_ASSET: Option<&str> = Some("POC404-launcher-macos-arm64.zip");
 #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
-pub const LAUNCHER_ASSET: Option<&str> = Some("horizon-launcher-windows-x64.zip");
+pub const LAUNCHER_ASSET: Option<&str> = Some("POC404-launcher-windows-x64.zip");
 #[cfg(not(any(
     all(target_os = "linux", target_arch = "x86_64"),
     all(target_os = "macos", target_arch = "aarch64"),
@@ -3494,9 +3494,11 @@ pub fn {f}("
         assert!(is_launcher_tag("launcher@0.2.0"));
         assert_eq!(launcher_version("v2026.10.13"), None);
         assert_eq!(launcher_version("launcher-vx"), None);
+        let game_asset = ASSET.unwrap_or("POC404-linux-x86_64.tar.gz");
+        let launcher_asset = LAUNCHER_ASSET.unwrap_or("POC404-launcher-linux-x86_64.tar.gz");
         let list = serde_json::json!([
-            {"tag_name": "v2026.10.12", "assets": [{"name": "horizon-linux-x86_64.tar.gz", "browser_download_url": "u", "size": 1}]},
-            {"tag_name": "launcher-v9.0.0", "assets": [{"name": "horizon-launcher-linux-x86_64.tar.gz", "browser_download_url": "u", "size": 1}]},
+            {"tag_name": "v2026.10.12", "assets": [{"name": game_asset, "browser_download_url": "u", "size": 1}]},
+            {"tag_name": "launcher-v9.0.0", "assets": [{"name": launcher_asset, "browser_download_url": "u", "size": 1}]},
             {"tag_name": "v2026.10.13", "assets": []},
             {"tag_name": "launcher-v0.0.1", "draft": true, "assets": []},
         ]);

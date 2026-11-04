@@ -23,7 +23,9 @@ impl Launcher {
     /// The player's own profile picture, `size` points square, if they set one.
     pub(super) fn profile_image(&mut self, size: f32) -> Option<Arc<RenderImage>> {
         let path = self.settings.profile_picture.clone()?;
-        self.icon_image(format!("profile:{path}"), size, true, || std::fs::read(&path).ok())
+        self.icon_image(format!("profile:{path}"), size, true, || {
+            std::fs::read(&path).ok()
+        })
     }
 
     /// The instance's own picture, `size` points square. Whether there is one is asked once:

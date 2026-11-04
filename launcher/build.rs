@@ -8,7 +8,12 @@ fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         let mut resource = winresource::WindowsResource::new();
         resource.set_icon(&ico);
-        for key in ["ProductName", "FileDescription", "InternalName", "CompanyName"] {
+        for key in [
+            "ProductName",
+            "FileDescription",
+            "InternalName",
+            "CompanyName",
+        ] {
             resource.set(key, "POC404");
         }
         if let Err(e) = resource.compile() {

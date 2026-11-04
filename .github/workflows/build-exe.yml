@@ -1,68 +1,23 @@
 name: Build POC404.exe
-
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
-    tags: ["v*"]
-  pull_request:
-    branches: [main, master]
-
-# Only one build per branch: a newer push cancels the older one.
-concurrency:
-  group: build-exe-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-env:
-  PYTHONUTF8: "1"          # build.py prints cargo's output; Windows' default cp1252 would crash on it
-  CARGO_TERM_COLOR: never
-  CARGO_NET_RETRY: "10"
-
+    branches: [main]
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-
-      - name: Allow long paths
-        run: git config --system core.longpaths true
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - run: python -m pip install --upgrade pip pillow
-
+      - run: pip install pillow
       - uses: dtolnay/rust-toolchain@stable
-
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: launcher
-
-      - name: Build POC404.exe
-        run: python build.py --build
-
+      - run: python bulid.py --build
       - uses: actions/upload-artifact@v4
         with:
           name: POC404
           path: dist/POC404.exe
-          if-no-files-found: error
-
-  release:
-    # Pushing a tag such as v1.0.0 also publishes the .exe as a GitHub Release.
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: POC404
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: POC404.exe

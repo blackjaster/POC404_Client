@@ -34,12 +34,3 @@
 
 # Release-only compiled original exporter bundle.
 /exporters/
-
-# Editors, OS files and build output
-/launcher/target/
-Thumbs.db
-desktop.ini
-.vscode/
-.idea/
-__MACOSX/
-*.log
