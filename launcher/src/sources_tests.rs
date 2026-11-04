@@ -473,7 +473,7 @@ fn nothing_found_lists_every_folder_and_what_it_lacks() {
         "Minecraft 26.3 was not found. POC404 looked in:\n  \
          {} (the folder doesn't exist)\n  \
          {} (Prism Launcher: libraries/com/mojang/minecraft/26.3/minecraft-26.3-client.jar is \
-         not the 26.3 release Horizon was made for)\n  \
+         not the 26.3 release POC404 was made for)\n  \
          {} (Modrinth App: no Minecraft 26.3 client jar)\nTo fix it:\n",
         chosen.display(),
         wrong.display(),

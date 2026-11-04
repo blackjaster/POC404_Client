@@ -227,7 +227,7 @@ fn a_file_that_is_not_the_pinned_one_stops_the_download() {
     )
     .unwrap_err();
     assert!(
-        error.starts_with("https://piston-data.mojang.com/client.jar is not the one Horizon pins"),
+        error.starts_with("https://piston-data.mojang.com/client.jar is not the one POC404 pins"),
         "{error}"
     );
     assert!(!dir.join("versions/26.3/26.3.jar").exists());
