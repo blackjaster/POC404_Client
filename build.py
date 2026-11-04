@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Builds the POC404 launcher as a Windows .exe, with your icon, from a black window.
 
-    python bulid.py                      the window
-    python bulid.py --build              the same build with no window (for scripts)
-    python bulid.py --apply-update NEW   takes a newer project (a .zip or a folder) in: its
+    python build.py                      the window
+    python build.py --build              the same build with no window (for scripts)
+    python build.py --apply-update NEW   takes a newer project (a .zip or a folder) in: its
                                          backend replaces ours, the interface and the icon stay
 
 What it does:
@@ -31,6 +31,12 @@ import sys
 import threading
 from pathlib import Path
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")  # Windows CI defaults to cp1252
+    except (AttributeError, ValueError):
+        pass
+
 ROOT = Path(__file__).resolve().parent
 LAUNCHER = ROOT / "launcher"
 ICONS = ROOT / "packaging" / "icons"
@@ -41,6 +47,16 @@ CRATE = "horizon-launcher"
 NAME = "POC404"
 IS_WINDOWS = os.name == "nt"
 EXE = f"{CRATE}.exe" if IS_WINDOWS else CRATE
+
+
+def read_text(path: Path) -> str:
+    with open(path, encoding="utf-8", newline="") as f:
+        return f.read()
+
+
+def write_text(path: Path, text: str) -> None:
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        f.write(text)
 
 
 def make_icon(source: Path, log) -> None:
@@ -97,7 +113,7 @@ BRANDING = [
 
 # What an update never replaces: the interface and the icon. Everything else is the backend.
 PROTECTED = [
-    "bulid.py",
+    "build.py",
     "packaging/icons/",
     "launcher/build.rs",
     "launcher/lang/",
@@ -166,28 +182,28 @@ def rename_text(log) -> None:
     """Horizon -> POC404 in the text the launcher shows (string literals and the language tables),
     wherever an update brought the old name back. Paths, URLs, file names and comments stay."""
     import json
-    import re
 
     count = 0
     files = list((LAUNCHER / "src").glob("**/*.rs")) + list((LAUNCHER / "tests").glob("**/*.rs"))
     for path in files:
         if path.name in ("mcp.rs", "game_app.rs"):
             continue
-        text = path.read_text(encoding="utf-8")
+        text = read_text(path)
         new, n = _brand_rewrite(text)
         if n:
-            path.write_text(new, encoding="utf-8")
+            write_text(path, new)
             count += n
     for table in (LAUNCHER / "lang").glob("*.json"):
-        data = json.loads(table.read_text(encoding="utf-8"))
+        original = read_text(table)
+        data = json.loads(original)
         out = {}
         for key, value in data.items():
             if _brand_ok(key):
                 key, value = key.replace("Horizon", "POC404"), value.replace("Horizon", "POC404")
             out[key] = value
         new = json.dumps(out, ensure_ascii=False, indent=2) + "\n"
-        if new != table.read_text(encoding="utf-8"):
-            table.write_text(new, encoding="utf-8")
+        if new != original.replace("\r\n", "\n"):
+            write_text(table, new)
     if count:
         log(f"Renamed Horizon to POC404 in {count} texts")
 
@@ -199,11 +215,11 @@ def apply_branding(log) -> None:
         if not path.is_file():
             log(f"Branding: {name} isn't here, skipped")
             continue
-        text = path.read_text(encoding="utf-8")
+        text = read_text(path)
         if new in text:
             continue  # already done
         if old in text:
-            path.write_text(text.replace(old, new), encoding="utf-8")
+            write_text(path, text.replace(old, new))
             log(f"Branding: {name} updated")
         else:
             log(f"Branding: {name} changed upstream, so {old[:40]!r} wasn't found: check it by hand")

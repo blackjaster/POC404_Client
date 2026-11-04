@@ -349,12 +349,9 @@ class OracleReuseTests(unittest.TestCase):
         python = root / "python"
         python.mkdir()
         (python / "python3").symlink_to(sys.executable)
-        # Nothing another test or the machine set for the parity runner may reach this shim.
-        base = {key: value for key, value in os.environ.items() if not key.startswith("PARITY_")}
-        self.env = dict(base, PATH=f"{self.shim}:{self.bin}:{python}", PARITY_SHIM_REAL_PATH=str(self.bin),
+        self.env = dict(os.environ, PATH=f"{self.shim}:{self.bin}:{python}", PARITY_SHIM_REAL_PATH=str(self.bin),
                         PARITY_SHIM_CACHE=str(root / "cache"))
         self.subprocess = subprocess
-        self.stderr = ""
 
     def tearDown(self):
         self.temp.cleanup()
@@ -363,28 +360,18 @@ class OracleReuseTests(unittest.TestCase):
         result = self.subprocess.run(["java", str(self.input), str(self.output)], env=self.env, capture_output=True, text=True,
                                      stdin=self.subprocess.DEVNULL, check=True)
         self.assertEqual(result.stdout, "done\n")
-        self.stderr = result.stderr
         return int((self.input.parent / "runs").read_text())
 
-    def assert_runs(self, expected):
-        """The oracle has run `expected` times in all; if not, say what the shim recorded."""
-        got = self.oracle()
-        cache = Path(self.env["PARITY_SHIM_CACHE"])
-        records = {path.name: path.read_text()[:600] for path in sorted(cache.glob("*.json"))}
-        stamps = {path.name: (path.stat().st_size, path.stat().st_mtime_ns) for path in (self.input, self.output) if path.exists()}
-        self.assertEqual(got, expected, f"shim stderr: {self.stderr!r}; files now: {stamps}; records: {records}; "
-                                        f"cache: {sorted(path.name for path in cache.iterdir())}")
-
     def test_reuses_until_an_input_or_output_changes(self):
-        self.assert_runs(1)
-        self.assert_runs(1)  # replayed, stdout included
+        self.assertEqual(self.oracle(), 1)
+        self.assertEqual(self.oracle(), 1)  # replayed, stdout included
         self.input.write_text("a")  # same content, new mtime: still reusable
-        self.assert_runs(1)
+        self.assertEqual(self.oracle(), 1)
         self.input.write_text("b")
-        self.assert_runs(2)
+        self.assertEqual(self.oracle(), 2)
         self.assertEqual(self.output.read_text(), "b")
         self.output.write_text("tampered")
-        self.assert_runs(3)
+        self.assertEqual(self.oracle(), 3)
         self.assertEqual(self.output.read_text(), "b")
 
 

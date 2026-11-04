@@ -51,17 +51,7 @@ jobs:
             python tools/check_public_tree.py --history
           fi
       - name: Test offline research tooling
-        run: |
-          set +e
-          python -m unittest discover -s tests -v > unittest.log 2>&1
-          code=$?
-          tail -n 60 unittest.log
-          if [ "$code" -ne 0 ]; then
-            # The failing tests, as an annotation anyone can read without opening the log.
-            summary=$(grep -E -A8 '^(ERROR|FAIL):' unittest.log | head -n 60 | sed ':a;N;$!ba;s/\n/%0A/g')
-            echo "::error title=python tests failed::${summary}"
-          fi
-          exit "$code"
+        run: python -m unittest discover -s tests -v
   clippy:
     runs-on: ubuntu-latest
     timeout-minutes: 30

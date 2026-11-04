@@ -100,7 +100,7 @@ impl Limits {
 
 /// `4096` as `4 GB`, `12800` as `12.5 GB`.
 pub fn gb(mb: u32) -> String {
-    if mb.is_multiple_of(1024) {
+    if mb % 1024 == 0 {
         format!("{} GB", mb / 1024)
     } else {
         format!("{:.1} GB", mb as f64 / 1024.0)

@@ -23,14 +23,15 @@ mod import_page;
 mod instance_icons;
 mod instance_mods;
 mod instances_page;
+mod version_choose;
 mod internet;
 mod language_page;
 mod launch_page;
 mod line_edit;
 mod markdown;
 mod mcp;
-mod memory_page;
 mod microsoft;
+mod memory_page;
 mod modpacks_page;
 mod mods_page;
 mod mods_project;
@@ -52,7 +53,6 @@ mod switch_page;
 mod theme;
 mod themes_page;
 mod titlebar;
-mod version_choose;
 mod while_playing;
 mod worlds_page;
 
@@ -2922,13 +2922,7 @@ impl Launcher {
                     .child(group("AI", "terminal"))
                     .child(self.no_ai_row(n + 6, cx))
                     .child(group("About", "info-box"))
-                    .child(index_row(
-                        n + 7,
-                        "POC404",
-                        Some(plain(&horizon)),
-                        horizon_action,
-                        &t,
-                    ))
+                    .child(index_row(n + 7, "POC404", Some(plain(&horizon)), horizon_action, &t))
                     .child(index_row(
                         n + 8,
                         tr("Launcher"),

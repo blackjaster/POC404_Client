@@ -114,10 +114,7 @@ impl Launcher {
     pub(super) fn default_memory_row(&self, cx: &mut Context<Self>) -> Div {
         let t = self.theme;
         let limits = Limits::detect();
-        let current = self
-            .settings
-            .default_memory_mb
-            .unwrap_or(limits.recommended_mb);
+        let current = self.settings.default_memory_mb.unwrap_or(limits.recommended_mb);
         let weak = cx.entity().downgrade();
         let slider = memory_slider("default-memory", current, &limits, &t, move |mb, _, cx| {
             let _ = weak.update(cx, |this, cx| {
