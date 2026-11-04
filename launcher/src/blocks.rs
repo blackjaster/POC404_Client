@@ -16,6 +16,11 @@ impl gpui::AssetSource for Assets {
         if path == "icons/poc404.svg" {
             return Ok(Some(Cow::Borrowed(include_bytes!("../assets/poc404.svg"))));
         }
+        if path == "icons/ouroboros.svg" {
+            return Ok(Some(Cow::Borrowed(include_bytes!(
+                "../assets/ouroboros.svg"
+            ))));
+        }
         if path == "icons/discord.svg" {
             return Ok(Some(Cow::Borrowed(include_bytes!("../assets/discord.svg"))));
         }
@@ -29,7 +34,11 @@ impl gpui::AssetSource for Assets {
         Ok(horizon_theme::icons::ALL
             .iter()
             .map(|(name, _)| format!("icons/{name}.svg").into())
-            .chain(["icons/poc404.svg".into(), "icons/discord.svg".into()])
+            .chain([
+                "icons/poc404.svg".into(),
+                "icons/discord.svg".into(),
+                "icons/ouroboros.svg".into(),
+            ])
             .collect())
     }
 }
