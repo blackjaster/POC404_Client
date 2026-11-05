@@ -554,6 +554,13 @@ impl HudAtlas {
         }
         // POC404 keeps vanilla's own "JAVA EDITION" banner as it is: no "RUST EDITION" relabel.
         images.push(("horizon/white".into(), 4, 4, vec![255; 64]));
+        // POC404's title-screen background: each frame of the snake, decoded once here and
+        // cycled by `title.rs` while the main menu is on screen.
+        for (i, png) in crate::snake_bg::FRAMES.iter().enumerate() {
+            if let Ok((w, h, pixels)) = decode_bytes(png) {
+                images.push((crate::snake_bg::sprite_name(i).into(), w, h, pixels));
+            }
+        }
         if full {
             Self::slots(&mut images, crate::trims::slot_size(root));
         }

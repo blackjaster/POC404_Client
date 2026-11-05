@@ -369,11 +369,18 @@ class OracleReuseTests(unittest.TestCase):
     def assert_runs(self, expected):
         """The oracle has run `expected` times in all; if not, say what the shim recorded."""
         got = self.oracle()
+        if got == expected:
+            return
+        # Only built once the count is already wrong, never on a passing call: the shim's cache
+        # folder does not exist until it has something to put in it, so listing it eagerly (as an
+        # assertEqual message argument, evaluated whether or not the assertion fails) broke even
+        # runs that matched.
         cache = Path(self.env["PARITY_SHIM_CACHE"])
-        records = {path.name: path.read_text()[:600] for path in sorted(cache.glob("*.json"))}
+        records = {path.name: path.read_text()[:600] for path in sorted(cache.glob("*.json"))} if cache.is_dir() else {}
         stamps = {path.name: (path.stat().st_size, path.stat().st_mtime_ns) for path in (self.input, self.output) if path.exists()}
-        self.assertEqual(got, expected, f"shim stderr: {self.stderr!r}; files now: {stamps}; records: {records}; "
-                                        f"cache: {sorted(path.name for path in cache.iterdir())}")
+        listing = sorted(path.name for path in cache.iterdir()) if cache.is_dir() else "cache folder does not exist"
+        self.fail(f"got {got}, expected {expected}; shim stderr: {self.stderr!r}; files now: {stamps}; "
+                  f"records: {records}; cache: {listing}")
 
     def test_reuses_until_an_input_or_output_changes(self):
         self.assert_runs(1)

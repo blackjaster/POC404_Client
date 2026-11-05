@@ -90,6 +90,27 @@ fn recover_issues(dir: &Path) -> [Option<crate::save::DatIssue>; 2] {
 /// apart): the title's top.
 /// `LogoRenderer.extractRenderState`: the logo's top 44 of 64 rows, then the
 /// edition banner's top 14 of 16 rows overlapping its bottom by 7.
+/// The title screen's own background: the snake, centred and as large as fits without
+/// stretching it off its square, cycling through POC404's frames (`snake_bg::FRAMES`) once
+/// every few seconds. Drawn first, so the logo and buttons sit over it.
+const SNAKE_FPS: f32 = 10.0;
+
+fn draw_snake_background(atlas: &HudAtlas, batch: &mut HudBatch, w: f32, h: f32, elapsed: std::time::Duration) {
+    let frames = crate::snake_bg::FRAMES.len();
+    if frames == 0 {
+        return;
+    }
+    let i = (elapsed.as_secs_f32() * SNAKE_FPS) as usize % frames;
+    let side = w.min(h);
+    batch.sprite_region(
+        atlas,
+        &crate::snake_bg::sprite_name(i),
+        [(w - side) / 2.0, (h - side) / 2.0, side, side],
+        side,
+        side,
+    );
+}
+
 fn draw_logo(atlas: &HudAtlas, batch: &mut HudBatch, w: f32) {
     batch.sprite_region(
         atlas,
@@ -1861,6 +1882,7 @@ impl Title {
         let mut fade_from = None;
         match &self.mode {
             Mode::Main => {
+                draw_snake_background(atlas, batch, w, h, self.started.elapsed());
                 draw_logo(atlas, batch, w);
                 if !hide_splash && let Some(splash) = self.splash.as_deref() {
                     let tw = HudBatch::text_width(atlas, splash);

@@ -75,6 +75,7 @@ pub mod settings;
 pub mod shader_pack_list;
 pub mod signs;
 pub mod skins;
+pub mod snake_bg;
 pub mod sound_engine;
 pub mod sound_events;
 pub mod sound_preview;
