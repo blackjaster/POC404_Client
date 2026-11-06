@@ -1,0 +1,4 @@
+# The public key POC404's releases (github.com/blackjaster/POC404_Client) are signed with: one base64
+# Ed25519 key per line. The launcher builds these in and refuses a download no key here signed.
+# The private key exists only as the RELEASE_SIGNING_KEY secret of that repository.
+q0YghBHdyV3g2G1Qtxnn7leitP9PkSz0XHvpGT2bTzw=

@@ -1,0 +1,51 @@
+/.local/
+/target/
+**/__pycache__/
+*.py[cod]
+/.venv/
+# Downloaded/decompiled game content and private profiling artifacts.
+*.jar
+*.class
+# ...except POC404's own compiled exporter bundle, which the release workflow packages (docs/POC404-RELEASE.md).
+!/exporters/**/*.class
+!/exporters/**/*.jar
+*.jfr
+*.hprof
+/decompiled/
+/minecraft/
+/assets/
+/run/
+/logs/
+/dist/
+/mods/horizon/build/
+/saves/
+/backups/
+/tools/logs/
+.DS_Store
+# What the client writes to its working directory when run from the repo root.
+/options.txt
+/horizon.txt
+/horizon-graphics.txt
+/horizon-controller.txt
+/horizon-extras.txt
+/horizon-player.txt
+/servers.dat
+/screenshots/
+/.horizon-cache/
+/crash-reports/
+/debug/
+
+
+# Secrets: never commit the signing key (it belongs in the RELEASE_SIGNING_KEY repository secret).
+RELEASE_SIGNING_KEY*
+*.pem
+.env
+.env.*
+
+# Editors, OS files and build output
+/launcher/target/
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+__MACOSX/

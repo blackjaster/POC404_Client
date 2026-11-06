@@ -1,0 +1,20 @@
+# Let Git normalise line endings of text files (rules below override this for specific files).
+* text=auto
+
+
+# Shell scripts and hooks must keep LF or they break on Linux/macOS.
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+# Binary files: never touched.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.webm binary
+*.ico binary
+*.icns binary
+*.class binary
+*.jar binary
+*.zip binary

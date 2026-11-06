@@ -1,0 +1,61 @@
+name: POC404 launcher release
+# Builds the launcher for Windows with build.py, packages it as POC404-launcher-windows-x64.zip,
+# signs it with the key in the RELEASE_SIGNING_KEY secret and publishes it as a GitHub release
+# (tag launcher@X.Y.Z, separate from the game's vX.Y.Z releases: the launcher tells them apart by
+# the tag's shape). Run it by hand: Actions > POC404 launcher release.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Launcher version, three numbers (becomes tag launcher@VERSION)
+        default: 1.0.0
+        required: true
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      TAG: launcher@${{ inputs.version }}
+      ASSET: POC404-launcher-windows-x64
+      HORIZON_LAUNCHER_TAG: launcher@${{ inputs.version }}
+      HORIZON_LAUNCHER_VERSION: ${{ inputs.version }}
+      PYTHONUTF8: "1"
+      CARGO_TERM_COLOR: never
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: The version and the signing key are in place
+        run: |
+          [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::version must be three numbers, e.g. 1.0.0"; exit 1; }
+          test -n "${{ secrets.RELEASE_SIGNING_KEY }}" || { echo "::error::the RELEASE_SIGNING_KEY secret is not set (docs/POC404-RELEASE.md, step 1)"; exit 1; }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip pillow
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher
+      - name: Build (build.py puts the icon in and runs cargo build --release)
+        run: python build.py --build
+      - name: Package
+        run: |
+          mkdir dist_zip
+          cp dist/POC404.exe "dist_zip/$ASSET.exe"
+          cd dist_zip && 7z a -tzip "../dist/$ASSET.zip" "$ASSET.exe" > /dev/null
+      - name: Sign
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: bash tools/ci/sign_release.sh "$TAG" "dist/$ASSET.zip"
+      - name: The launcher's own check accepts it
+        run: cargo run --locked -q -p horizon-release-sign -- verify --tag "$TAG" dist
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" "dist/$ASSET.zip" dist/SHA256SUMS dist/SHA256SUMS.sig \
+            --title "POC404 launcher $TAG" --notes "POC404 launcher ${{ inputs.version }}" --target "$GITHUB_SHA"
